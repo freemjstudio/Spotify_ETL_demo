@@ -1,18 +1,4 @@
 # Databricks notebook source
-# S3 에서 Databricks 환경으로 테이블 옮기기 
-# MySQL --[DMS]--> RDS -> S3 bucket 
-
-# df = spark.sql("""
-#     CREATE TABLE my_table
-#     AS SELECT * 
-#     FROM parquet.`s3://freemjstudio-bucket/testdb/member_table/LOAD00000001.parquet`
-# """)
-
-
-# https://medium.com/grabngoinfo/databricks-mount-to-aws-s3-and-import-data-4100621a63fd
-
-# COMMAND ----------
-
 # MAGIC %sql
 # MAGIC desc detail test_access_keys
 
@@ -41,31 +27,53 @@ aws_keys_df = spark.read.format(file_type).option("header", first_row_is_header)
 
 # COMMAND ----------
 
-aws_keys_df.show()
-
-# COMMAND ----------
-
 # Get the AWS access key and secret key from the spark dataframe 
-
+ACCESS_KEY = 'YOUR_ACCESS_KEY'
+SECRET_KEY = 'YOUR_SECRET_KEY'
 ENCODED_SECRET_KEY = urllib.parse.quote(string=SECRET_KEY, safe='')
 
 # COMMAND ----------
 
 # AWS S3 Bucket Name 
-AWS_S3_BUCKET = ''
+AWS_S3_BUCKET = 'freemjstudio-bucket'
 
 # Mount Name for the bucket 
-MOUNT_NAME = ''
+MOUNT_NAME = '/mnt/freemjstudio-bucket'
+
+SOURCE_URL = 's3n://{0}:{1}@{2}'.format(ACCESS_KEY, ENCODED_SECRET_KEY, AWS_S3_BUCKET)
+
+
+# COMMAND ----------
+
+dbutils.fs.mount(SOURCE_URL, MOUNT_NAME)
+
+# COMMAND ----------
+
+display(dbutils.fs.ls("/mnt/freemjstudio-bucket/testdb"))
+
+# COMMAND ----------
+
+# MAGIC %md 
+# MAGIC ### 외부 저장소 (aws S3 Bucket)에서 data 읽어오기
 
 # COMMAND ----------
 
 aws_bucket_name = "freemjstudio-bucket"
-
 df = spark.read.format("parquet").load(f"s3://{aws_bucket_name}/testdb/member_table/LOAD00000001.parquet")
 display(df)
-dbutils.fs.ls(f"s3://{aws_bucket_name}/")
 
-# SELECT * FROM json.`$path.json`
+# COMMAND ----------
+
+df = spark.sql("""
+    CREATE TABLE my_table
+    AS SELECT * 
+    FROM parquet.`s3://freemjstudio-bucket/testdb/member_table/LOAD00000001.parquet`
+""")
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC SELECT * FROM my_table;
 
 # COMMAND ----------
 
