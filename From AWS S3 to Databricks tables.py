@@ -2,17 +2,11 @@
 # S3 에서 Databricks 환경으로 테이블 옮기기 
 # MySQL --[DMS]--> RDS -> S3 bucket 
 
-# df.write.option("path", "s3://my-bucket/external-location/path/to/table").saveAsTable("my_table")
-# s3://freemjstudio-bucket/export-s3/export_info_export-s3.json
-
-
-# df.write.option("path","s3://freemjstudio-bucket/export-s3/export_info_export-s3.json").saveAsTable("my_table")
-
-df = spark.sql("""
-    CREATE TABLE my_table
-    AS SELECT * 
-    FROM parquet.`s3://freemjstudio-bucket/testdb/member_table/LOAD00000001.parquet`
-""")
+# df = spark.sql("""
+#     CREATE TABLE my_table
+#     AS SELECT * 
+#     FROM parquet.`s3://freemjstudio-bucket/testdb/member_table/LOAD00000001.parquet`
+# """)
 
 
 # https://medium.com/grabngoinfo/databricks-mount-to-aws-s3-and-import-data-4100621a63fd
@@ -33,7 +27,7 @@ from pyspark.sql.functions import *  # pyspark functions
 # URL processing 
 import urllib 
 
-file_type = "parquet" 
+file_type = "delta" 
 
 # Whether the file has a header
 first_row_is_header = "true"
@@ -47,8 +41,21 @@ aws_keys_df = spark.read.format(file_type).option("header", first_row_is_header)
 
 # COMMAND ----------
 
+aws_keys_df.show()
+
+# COMMAND ----------
+
 # Get the AWS access key and secret key from the spark dataframe 
-ACCESS_KEY = aws_keys_df.where(col)
+
+ENCODED_SECRET_KEY = urllib.parse.quote(string=SECRET_KEY, safe='')
+
+# COMMAND ----------
+
+# AWS S3 Bucket Name 
+AWS_S3_BUCKET = ''
+
+# Mount Name for the bucket 
+MOUNT_NAME = ''
 
 # COMMAND ----------
 
