@@ -12,6 +12,8 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
 from datetime import date, timedelta, timezone, datetime
 
+
+
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=CLIENT_ID,
                                                            client_secret=CLIENT_SECRET))
 
@@ -19,18 +21,12 @@ playlist_id_list = ["spotify:playlist:37i9dQZEVXbNxXF4SkHj9F", "spotify:playlist
 conutry_info = {0:"Korea", 1:"Japan", 2:"USA"}
 country_code = {0:"KR", 1:"JP", 2:"USA"}
 
-for idx in len(playlist_id_list): 
+for idx in range(len(playlist_id_list)): 
     pid = playlist_id_list[idx]
     response = sp.playlist_tracks(pid)
     tracks = response['items']
     today = datetime.today().strftime('%Y-%m-%d')
     spotipy_data = []
-
-    if len(tracks) == 50:
-        print("The list number of the playlists", len(tracks))
-    else:
-        print("ERROR", len(tracks))
-        
 
     uris = [track['track']['uri'] for track in tracks]
     schema = ['date', 'position', 'song', 'artist', 'popularity', 'duration_ms', 'album_type', 'total_tracks', 'release_date', 'is_explicit', 'album_cover_url', 'playlist_country']
@@ -58,9 +54,9 @@ for idx in len(playlist_id_list):
 
         # CREATE DATAFRAME 
     
-        df = pd.DataFrame(spotipy_data, columns= schema)    
-        sparkDF = spark.createDataFrame(df)
-        sparkDF.write.mode('overwrite').saveAsTable(f'spotify_bronze_{country_code[idx]}')
+    df = pd.DataFrame(spotipy_data, columns= schema)    
+    sparkDF = spark.createDataFrame(df)
+    sparkDF.write.mode('overwrite').saveAsTable(f'spotify_bronze_{country_code[idx]}')
 
 
 # COMMAND ----------
