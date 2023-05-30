@@ -12,8 +12,6 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
 from datetime import date, timedelta, timezone, datetime
 
-
-
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=CLIENT_ID,
                                                            client_secret=CLIENT_SECRET))
 

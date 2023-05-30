@@ -5,19 +5,6 @@
 
 # COMMAND ----------
 
-# MAGIC %sql 
-# MAGIC DROP TABLE spotify_bronze;
-# MAGIC REFRESH TABLE spotify_bronze_kr;
-# MAGIC REFRESH TABLE spotify_bronze_jp;
-# MAGIC REFRESH TABLE spotify_bronze_usa;
-
-# COMMAND ----------
-
-# MAGIC %sh 
-# MAGIC rm -rf ./checkpoints/spotify_silver_KR
-
-# COMMAND ----------
-
 from pyspark.sql import functions as F 
 # bronze -> silver table로 업데이트하면서 processed_time 추가 
 
