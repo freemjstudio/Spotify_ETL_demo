@@ -6,6 +6,8 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from pprint import pprint 
 
+
+
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=CLIENT_ID,
                                                            client_secret=CLIENT_SECRET))
 
@@ -16,16 +18,13 @@ offset = 0
 playlist_list = []
 
 while True:
-
     response = sp.playlist_items(playlist_id=pid,
                                  offset=offset,
-                                 additional_types=['track'])
+                                 additional_types=['track'], limit=1)
     
+    for item in response['items']:
+        print(item['track']['album'])
+        print(item['track']['album']['name']) # 가수 이름 
+
     
     break 
-    # if len(response['track']['items']) == 0:
-    #     break 
-
-    # print(response['track']['items'])
-    # offset = offset + len(response['track']['items'])
-    # print(offset, "/", response["total"])
