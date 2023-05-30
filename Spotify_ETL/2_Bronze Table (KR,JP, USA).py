@@ -81,7 +81,7 @@ for idx in range(len(playlist_id_list)):
 # COMMAND ----------
 
 # MAGIC %md 
-# MAGIC ## Check Quality 
+# MAGIC ## Check the Data Quality 
 
 # COMMAND ----------
 
