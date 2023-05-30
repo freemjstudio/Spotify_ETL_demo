@@ -15,16 +15,22 @@ sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=CLIENT_ID,
 pid = "spotify:playlist:37i9dQZEVXbNxXF4SkHj9F"
 offset = 0 
 
-playlist_list = []
-
+album_names = []
 while True:
     response = sp.playlist_items(playlist_id=pid,
                                  offset=offset,
-                                 additional_types=['track'], limit=1)
+                                 additional_types=['track'])
     
     for item in response['items']:
-        print(item['track']['album'])
-        print(item['track']['album']['name']) # 가수 이름 
+        artist_names = []
+        
+        for artist in item['track']['album']['artists']:
+            artist_names.append(artist['name'])
+        
+        album_names.append(item['track']['album']['name'])
 
     
     break 
+
+# 50 개 다 수집되었는지 확인 
+print(len(album_names))
