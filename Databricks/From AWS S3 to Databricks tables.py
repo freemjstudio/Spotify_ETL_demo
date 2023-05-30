@@ -77,4 +77,8 @@ df = spark.sql("""
 
 # COMMAND ----------
 
-
+df = spark.sql("""
+    CREATE TABLE employee
+    AS SELECT * 
+    FROM parquet.`s3://freemjstudio-bucket/testdb/member_table/LOAD00000001.parquet`
+""")
