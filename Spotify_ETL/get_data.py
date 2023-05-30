@@ -5,6 +5,7 @@ from identification import *
 import spotipy 
 from spotipy.oauth2 import SpotifyClientCredentials
 from pprint import pprint 
+import pandas as pd 
 
 
 
@@ -20,17 +21,17 @@ while True:
     response = sp.playlist_items(playlist_id=pid,
                                  offset=offset,
                                  additional_types=['track'])
-    
-    for item in response['items']:
-        artist_names = []
+    print(type(response))
+   # pd_object = pd.read_json(response, type='series')
+    # for item in response['items']:
+    #     artist_names = []
         
-        for artist in item['track']['album']['artists']:
-            artist_names.append(artist['name'])
+    #     for artist in item['track']['album']['artists']:
+    #         artist_names.append(artist['name'])
         
-        album_names.append(item['track']['album']['name'])
+    #     album_names.append(item['track']['album']['name'])
 
     
     break 
 
 # 50 개 다 수집되었는지 확인 
-print(len(album_names))
