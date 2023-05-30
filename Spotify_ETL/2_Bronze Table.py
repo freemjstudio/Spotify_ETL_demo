@@ -25,8 +25,7 @@ today = datetime.today().strftime('%Y-%m-%d')
 spotipy_data = []
 
 print(len(tracks))
-    
-#tracks.extend(response['items'])
+
 uris = [track['track']['uri'] for track in tracks]
 schema = ['date', 'position', 'song', 'artist', 'popularity', 'duration_ms', 'album_type', 'total_tracks', 'release_date', 'is_explicit', 'album_cover_url']
     
@@ -34,7 +33,7 @@ for rank, uri in enumerate(uris):
     track = sp.track(uri)
     song = track['name']
     artist_list = [artist['name'] for artist in track['album']['artists']]
-        # spotify 에서 artist 정보가 여러개일 수 있음 
+
     if len(artist_list) > 1:
         artist = artist_list[0] + ' & ' + ' & '.join(artist_list[1:])
     else:
@@ -52,18 +51,51 @@ for rank, uri in enumerate(uris):
 # COMMAND ----------
 
 import pandas as pd
+df = pd.DataFrame(spotipy_data, columns= schema)
 
 # COMMAND ----------
 
-df = pd.DataFrame(spotipy_data, columns= schema)
-df
+sparkDF = spark.createDataFrame(df)
+sparkDF.printSchema()
+
+# COMMAND ----------
+
+# MAGIC %md 
+# MAGIC ## Bronze Table  
+# MAGIC - Create Bronze Table by transforming spark dataframe to sql table 
+# MAGIC - Save raw data as 'spotify_bronze' table 
 
 # COMMAND ----------
 
 # MAGIC %sql 
-# MAGIC CREATE TABLE 
+# MAGIC CREATE OR REPLACE TABLE spotify_bronze
+# MAGIC (date STRING, position LONG, song STRING, artist STRING, popularity LONG, duration_ms LONG, album_type STRING, total_tracks LONG, release_date STRING, is_explicit BOOLEAN, album_cover_url STRING);
 
 # COMMAND ----------
 
-# bronze table 생성하기 
-# id, time_stamp, album, artist, chart_nation (어느 나라 차트인지), 
+sparkDF.write.mode('overwrite').saveAsTable('spotify_bronze')
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC SELECT count(*) FROM spotify_bronze;
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC
+# MAGIC ## Silver Table
+
+# COMMAND ----------
+
+from pyspark.sql import functions as F 
+# bronze -> silver table로 업데이트하면서 processed_time 추가 
+
+def update_silver():
+  query = (spark.readStream
+                .table("bronze")
+                .withColumn("processed_time", F.current_timestamp())
+                .writeStream.option("checkpointLocation", f"{DA.paths.checkpoints}/silver")
+                .trigger(availableNow=True)
+                .table("silver"))
+  query.awaitTermination() # prevent the lessson from moving forward until one batch is processed
