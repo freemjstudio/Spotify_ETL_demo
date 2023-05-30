@@ -68,34 +68,14 @@ sparkDF.printSchema()
 # COMMAND ----------
 
 # MAGIC %sql 
-# MAGIC CREATE OR REPLACE TABLE spotify_bronze
+# MAGIC CREATE OR REPLACE TABLE spotify_bronze_KR
 # MAGIC (date STRING, position LONG, song STRING, artist STRING, popularity LONG, duration_ms LONG, album_type STRING, total_tracks LONG, release_date STRING, is_explicit BOOLEAN, album_cover_url STRING);
 
 # COMMAND ----------
 
-sparkDF.write.mode('overwrite').saveAsTable('spotify_bronze')
+sparkDF.write.mode('overwrite').saveAsTable('spotify_bronze_KR')
 
 # COMMAND ----------
 
 # MAGIC %sql 
-# MAGIC SELECT count(*) FROM spotify_bronze;
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC
-# MAGIC ## Silver Table
-
-# COMMAND ----------
-
-from pyspark.sql import functions as F 
-# bronze -> silver table로 업데이트하면서 processed_time 추가 
-
-def update_silver():
-  query = (spark.readStream
-                .table("bronze")
-                .withColumn("processed_time", F.current_timestamp())
-                .writeStream.option("checkpointLocation", f"{DA.paths.checkpoints}/silver")
-                .trigger(availableNow=True)
-                .table("silver"))
-  query.awaitTermination() # prevent the lessson from moving forward until one batch is processed
+# MAGIC SELECT count(*) FROM spotify_bronze_KR;
