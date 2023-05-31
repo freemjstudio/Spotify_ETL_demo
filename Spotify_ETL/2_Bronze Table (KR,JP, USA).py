@@ -1,21 +1,36 @@
 # Databricks notebook source
+# MAGIC %md
+# MAGIC ## Extract Structured Streaming Data from Spotify Web API 
+
+# COMMAND ----------
+
 pip install spotipy
 
 # COMMAND ----------
 
-# Get Data from Spotify 
+def upsert_bronze(country_name, ):
+    sql_str = f"SELECT * FROM {country_name} WHERE date == '{date}' AND song == '{song_name}'"
+    
+    count = len(records)
 
-from token import * 
+# COMMAND ----------
+
+#from token import * 
 
 import spotipy 
 from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
 from datetime import date, timedelta, timezone, datetime
 
+CLIENT_ID = "09cb98d39ec84070a62d5efe4f80f772"
+CLIENT_SECRET = "6ac4601d32ac42609a2fc48708f86c99"
+
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=CLIENT_ID,
                                                            client_secret=CLIENT_SECRET))
 
-playlist_id_list = ["spotify:playlist:37i9dQZEVXbNxXF4SkHj9F", "spotify:playlist:37i9dQZEVXbKXQ4mDTEBXq", "spotify:playlist:37i9dQZEVXbLRQDuF5jeBp"] # KR - JP 
+playlist_id_list = ["spotify:playlist:37i9dQZEVXbNxXF4SkHj9F"]
+                    # , "spotify:playlist:37i9dQZEVXbKXQ4mDTEBXq", "spotify:playlist:37i9dQZEVXbLRQDuF5jeBp"] # KR - JP 
+
 conutry_info = {0:"Korea", 1:"Japan", 2:"USA"}
 country_code = {0:"KR", 1:"JP", 2:"USA"}
 
@@ -54,7 +69,9 @@ for idx in range(len(playlist_id_list)):
     
     df = pd.DataFrame(spotipy_data, columns= schema)    
     sparkDF = spark.createDataFrame(df)
-    sparkDF.write.mode('overwrite').saveAsTable(f'spotify_bronze_{country_code[idx]}')
+
+    # 겹치지 않으면 insert 하도록 리팩토링하기 
+    sparkDF.write.mode('append').saveAsTable(f'spotify_bronze_{country_code[idx]}')
 
 
 # COMMAND ----------
@@ -67,6 +84,7 @@ for idx in range(len(playlist_id_list)):
 # COMMAND ----------
 
 # MAGIC %sql 
+# MAGIC '''
 # MAGIC CREATE TABLE IF NOT EXISTS spotify_bronze_KR
 # MAGIC (date STRING, position LONG, song STRING, artist STRING, popularity LONG, duration_ms LONG, album_type STRING, total_tracks LONG, release_date STRING, is_explicit BOOLEAN, album_cover_url STRING, playlist_country STRING);
 # MAGIC
@@ -75,6 +93,7 @@ for idx in range(len(playlist_id_list)):
 # MAGIC
 # MAGIC CREATE TABLE IF NOT EXISTS spotify_bronze_USA
 # MAGIC (date STRING, position LONG, song STRING, artist STRING, popularity LONG, duration_ms LONG, album_type STRING, total_tracks LONG, release_date STRING, is_explicit BOOLEAN, album_cover_url STRING, playlist_country STRING);
+# MAGIC '''
 
 # COMMAND ----------
 
@@ -95,3 +114,22 @@ for idx in range(len(playlist_id_list)):
 
 # MAGIC %sql 
 # MAGIC SELECT count(*) FROM spotify_bronze_USA;
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC DESCRIBE HISTORY spotify_bronze_kr;
+
+# COMMAND ----------
+
+# %sql 
+# RESTORE TABLE spotify_bronze_kr TO VERSION AS OF 4;
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC SELECT * FROM spotify_bronze_kr;
+
+# COMMAND ----------
+
+
