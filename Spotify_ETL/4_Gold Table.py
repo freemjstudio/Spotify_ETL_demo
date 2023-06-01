@@ -21,9 +21,4 @@
 
 # MAGIC %sql
 # MAGIC
-# MAGIC -- 한국 일본 합쳐서 daily top 50 순위의 차트 만들기 
-# MAGIC -- rank 순위 , popularity , release date 최신순 순서대로 만들기 
-
-# COMMAND ----------
-
-# weekly 차트 만들기 
+# MAGIC -- 각 국 가별로 누적된 인기도 + 랭킹 가중치 계산을 통하여 해당 날짜 구간의 차트 만들기 ex) week 단위 
