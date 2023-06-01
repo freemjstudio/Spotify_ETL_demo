@@ -129,7 +129,3 @@ for idx in range(len(playlist_id_list)):
 
 # MAGIC %sql 
 # MAGIC SELECT * FROM spotify_bronze_kr;
-
-# COMMAND ----------
-
-
