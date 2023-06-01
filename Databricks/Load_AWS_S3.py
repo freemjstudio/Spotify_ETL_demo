@@ -9,3 +9,8 @@ dbutils.fs.mount(MOUNT_DIR, f"/mnt/minjiwoo/{MOUNT_FOLDER}")
 display(dbutils.fs.ls(f"/mnt/{MOUNT_FOLDER}"))
 
 df = spark.read.format("csv").load(f"dbfs:/mnt/minjiwoo/{MOUNT_FOLDER}/")
+
+articles_df = spark.read.csv("dbfs:/mnt/s3_cake/shared_articles.csv", header=True)
+articles_df.show(5)
+articles_df.write.saveAsTable("shared_articles")
+
