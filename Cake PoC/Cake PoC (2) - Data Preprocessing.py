@@ -70,17 +70,13 @@ print(d)
 
 # COMMAND ----------
 
-
-
-# COMMAND ----------
-
 from pyspark.sql import functions as F
 
 user_df = user_df.orderBy(F.col("timestamp").asc()) 
 
 # COMMAND ----------
 
-user_df['blank_days'] = 
+# user_df['blank_days'] = 
 
 # time stamp 수로 학습하지 않은 일 수 계산 
 
@@ -93,7 +89,12 @@ event_type_strength = {
    'FOLLOW': 3.0,
    'COMMENT CREATED': 4.0,  
 }
-user_df['eventStrength'] = 
+user_df['eventStrength'] = user_df['eventType'].apply(lambda x: event_type_strength[x])
+
+# COMMAND ----------
+
+# MAGIC %md 
+# MAGIC 적어도 5회이상 event 기록이 있는 사용자에 대해서만 추천 
 
 # COMMAND ----------
 
@@ -101,5 +102,31 @@ articles_df = articles_df[articles_df['eventType'] == 'CONTENT SHARED']
 
 # COMMAND ----------
 
+type(user_df)
+
+# COMMAND ----------
+
+user_pd_df = user_df.toPandas()
+users_interactions_count_df  = user_pd_df.groupby(['personId', 'contentId']).size().groupby('personId').size()
+
+users_interactions_count_df = users_interactions_count_df[users_interactions_count_df >= 5].reset_index()[['personId']]
+
+print("5회 이상 학습한 사용자 : %d " % len(users_interactions_count_df))
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
 # MAGIC %md 
-# MAGIC 전처리결과 테이블에 write
+# MAGIC ## Overwrite Table with New Dataframe
+
+# COMMAND ----------
+
+user_df.write.mode("overwrite").saveAsTable("user_log")
+shared_df.write.mode("overwrite").saveAsTable("shared_articles")
+
+# COMMAND ----------
+
+

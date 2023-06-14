@@ -28,8 +28,7 @@ CLIENT_SECRET = "6ac4601d32ac42609a2fc48708f86c99"
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=CLIENT_ID,
                                                            client_secret=CLIENT_SECRET))
 
-playlist_id_list = ["spotify:playlist:37i9dQZEVXbNxXF4SkHj9F"]
-                    # , "spotify:playlist:37i9dQZEVXbKXQ4mDTEBXq", "spotify:playlist:37i9dQZEVXbLRQDuF5jeBp"] # KR - JP 
+playlist_id_list = ["spotify:playlist:37i9dQZEVXbNxXF4SkHj9F", "spotify:playlist:37i9dQZEVXbKXQ4mDTEBXq", "spotify:playlist:37i9dQZEVXbLRQDuF5jeBp"] 
 
 conutry_info = {0:"Korea", 1:"Japan", 2:"USA"}
 country_code = {0:"KR", 1:"JP", 2:"USA"}
@@ -119,11 +118,6 @@ for idx in range(len(playlist_id_list)):
 
 # MAGIC %sql 
 # MAGIC DESCRIBE HISTORY spotify_bronze_kr;
-
-# COMMAND ----------
-
-# %sql 
-# RESTORE TABLE spotify_bronze_kr TO VERSION AS OF 4;
 
 # COMMAND ----------
 

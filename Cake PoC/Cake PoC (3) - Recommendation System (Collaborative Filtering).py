@@ -16,6 +16,74 @@ import matplotlib.pyplot as plt
 
 # COMMAND ----------
 
+# MAGIC %md 
+# MAGIC ## Training Set & Evaluation
+
+# COMMAND ----------
+
+interactions_df = spark.read.table("user_log")
+articles_df = spark.read.table("shared_articles")
+
+# COMMAND ----------
+
+# to pandas 
+interactions_df = interactions_df.toPandas()
+articles_df = articles_df.toPandas()
+
+# COMMAND ----------
+
+event_type_strength = {
+   'VIEW': 1.0,
+   'LIKE': 2.0, 
+   'BOOKMARK': 2.5, 
+   'FOLLOW': 3.0,
+   'COMMENT CREATED': 4.0,  
+}
+
+interactions_df['eventStrength'] = interactions_df['eventType'].apply(lambda x: event_type_strength[x])
+
+# COMMAND ----------
+
+users_interactions_count_df = interactions_df.groupby(['personId', 'contentId']).size().groupby('personId').size()
+print('# users: %d' % len(users_interactions_count_df))
+users_with_enough_interactions_df = users_interactions_count_df[users_interactions_count_df >= 5].reset_index()[['personId']]
+print('# users with at least 5 interactions: %d' % len(users_with_enough_interactions_df))
+
+# COMMAND ----------
+
+print('# of interactions: %d' % len(interactions_df))
+interactions_from_selected_users_df = interactions_df.merge(users_with_enough_interactions_df, 
+               how = 'right',
+               left_on = 'personId',
+               right_on = 'personId')
+print('# of interactions from users with at least 5 interactions: %d' % len(interactions_from_selected_users_df))
+
+# COMMAND ----------
+
+def smooth_user_preference(x):
+    return math.log(1+x, 2)
+
+interactions_full_df = interactions_from_selected_users_df \
+                    .groupby(['personId', 'contentId'])['eventStrength'].sum() \
+                    .apply(smooth_user_preference).reset_index()
+
+# COMMAND ----------
+
+interactions_train_df, interactions_test_df = train_test_split(interactions_full_df,
+                                   stratify=interactions_full_df['personId'], 
+                                   test_size=0.20,
+                                   random_state=42)
+
+print('# interactions on Train set: %d' % len(interactions_train_df))
+print('# interactions on Test set: %d' % len(interactions_test_df))
+
+# COMMAND ----------
+
+# MAGIC %md 
+# MAGIC ## Collaborative Filtering
+
+# COMMAND ----------
+
 #Creating a sparse pivot table with users in rows and items in columns
 users_items_pivot_matrix_df = interactions_train_df.pivot(index='personId', 
                                                           columns='contentId', 
@@ -25,7 +93,11 @@ users_items_pivot_matrix_df.head(10)
 
 # COMMAND ----------
 
-users_items_pivot_matrix = users_items_pivot_matrix_df.as_matrix()
+type(users_items_pivot_matrix_df)
+
+# COMMAND ----------
+
+users_items_pivot_matrix = users_items_pivot_matrix_df.to_numpy()
 users_items_pivot_matrix[:10]
 
 # COMMAND ----------
