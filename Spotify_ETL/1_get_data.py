@@ -44,6 +44,8 @@ for rank, uri in enumerate(uris):
 
     spotipy_data.append([today, rank+1, song, artist, popularity, duration_ms, album_type, total_tracks, release_date, is_explicit, album_cover_url])
 
+pprint(spotipy_data)
+
 # album_names = []
 # artist_names = []
 # response = sp.playlist_items(playlist_id=pid,
