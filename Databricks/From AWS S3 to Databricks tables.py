@@ -67,7 +67,7 @@ display(df)
 df = spark.sql("""
     CREATE TABLE my_table
     AS SELECT * 
-    FROM parquet.`s3://freemjstudio-bucket/testdb/member_table/LOAD00000001.parquet`
+    FROM parquet.`s3://freemjstudio-bucket/testdb/member_table/`
 """)
 
 # COMMAND ----------

@@ -66,43 +66,66 @@ FILE2 = "shared_articles.csv"
 
 # COMMAND ----------
 
+# MAGIC %md 
+# MAGIC ## Read Stream Data
+
+# COMMAND ----------
+
+# users_interactions.csv 
 df = (spark.readStream.format("cloudFiles")
     .option("cloudFiles.format", "csv")
     .option("header", "true")
     .schema(schema2)
-    .load("dbfs:/user/minjiwoo@mz.co.kr/mnt/minjiwoo/cake/users_interactions.csv"))
-
-# COMMAND ----------
-
-df.display()
-
-# COMMAND ----------
-
-# write to table 
-(df.writeStream.format("delta")
-.option("checkpointLocation", "/mnt/minjiwoo/cake/bronze")
-.trigger(availableNow=True)
-.table("bronze_interactions")) 
-
+    .load("dbfs:/user/mnt/minjiwoo/cake"))
 
 # COMMAND ----------
 
 # read + write 합친 함수 
 
 def process_bronze():
-    query = (spark.readStream
-                  .format("cloudFiles")
-                  .option("cloudFiles.format", "json")
-                  .option("cloudFiles.schemaLocation", f"{DA.paths.checkpoints}/bronze_schema")
-                  .load(DA.paths.source_daily)
-                  .join(F.broadcast(date_lookup_df), F.to_date((F.col("timestamp")/1000).cast("timestamp")) == F.col("date"), "left")
-                  .writeStream
-                  .option("checkpointLocation", f"{DA.paths.checkpoints}/bronze")
-                  .partitionBy("topic", "week_part")
-                  .trigger(availableNow=True)
-                  .table("bronze"))
+    query = (spark.readStream.format("cloudFiles")
+             .option("cloudFiles.format", "csv")
+             .option("cloudFiles.schemaLocation", "/mnt/minjiwoo/cake/_schema")
+            #  .option("header", "true")
+            #  .schema(schema2)
+             .load("dbfs:/user/mnt/minjiwoo/cake/users_interactions.csv")
+             .writeStream
+             .option("checkpointLocation", "/mnt/minjiwoo/cake/_checkpoint")
+             .trigger(availableNow=True)
+             .table("bronze_interaction"))
  
     query.awaitTermination()
+
+# COMMAND ----------
+
+# MAGIC %sh 
+# MAGIC ls /dbfs/mnt/minjiwoo/cake
+
+# COMMAND ----------
+
+process_bronze()
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC SELECT count(*) FROM bronze_interactions;
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC CREATE TABLE interaction_bronze (
+# MAGIC   timestamp STRING, 
+# MAGIC     eventType STRING,
+# MAGIC     contentId STRING,
+# MAGIC     personId STRING,
+# MAGIC     sessionId STRING,
+# MAGIC     userAgent STRING,
+# MAGIC     userRegion STRING,
+# MAGIC     userCountry STRING)
+
+# COMMAND ----------
+
+
 
 # COMMAND ----------
 
