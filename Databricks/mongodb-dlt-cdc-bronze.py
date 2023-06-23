@@ -3,12 +3,14 @@ import dlt
 from pyspark.sql.functions import * 
 from pyspark.sql.types import * 
 
-    
+schema = StructType()
+
 @dlt.table 
 def mongodb_cdc_raw():
     return spark.readStream.format("cloudFiles")\
                 .option("header", "true")\
                 .option("cloudFiles.format", "csv")\
+                .option("escape", '"')\
                 .schema("Op STRING, dmsTimestamp TIMESTAMP, _id STRING, _doc STRING")\
                 .load("s3://minji-spotify-mongodb/cake/user/")
 
@@ -27,6 +29,24 @@ dlt.apply_changes(
     stored_as_scd_type = 1
 )
 
+
+
+# COMMAND ----------
+
+import dlt 
+from pyspark.sql.functions import * 
+from pyspark.sql.types import * 
+
+@dlt.table 
+def mongodb_silver():
+    return spark.sql(
+        '''
+        SELECT from_json(_doc, '_id STRING, user_id STRING, age INT')._id as _id,
+        from_json(_doc, '_id STRING, user_id STRING, age INT').user_id as user_id,
+        from_json(_doc, '_id STRING, user_id STRING, age INT').age as age
+        FROM live.mongodb     
+        ''')
+    
 
 
 # COMMAND ----------

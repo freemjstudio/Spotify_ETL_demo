@@ -9,6 +9,7 @@ def mongodb_cdc_raw():
     return spark.readStream.format("cloudFiles")\
                 .option("header", "true")\
                 .option("cloudFiles.format", "csv")\
+                .option("escape", '"')\
                 .schema("Op STRING, dmsTimestamp TIMESTAMP, _id STRING, _doc STRING")\
                 .load("s3://minji-spotify-mongodb/cake/user/")
 
