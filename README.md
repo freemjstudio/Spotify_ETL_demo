@@ -1,7 +1,6 @@
+## Data Engineering Study based on Databricks
 
-
-## Medallion Architecture
-- Bronze Table > Silver Table > Gold Table 
-
-## Workflow 
-- 하루에 한번 오전 7시에 ETL 작업 스케줄링 
+#### 01. Cake PoC Case Study 
+#### 02. Databricks Study Code 
+#### 03. Spotify ETL 
+#### 04. Streaming Data ETL 
